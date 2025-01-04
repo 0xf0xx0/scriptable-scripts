@@ -6,11 +6,8 @@
  * Feel free to use in your own scripts :3
  * Author: Ging
  * Name: LibFoxxo
- * Year: 2022
- * Donate: bc1qd65n4y562q6vdp5lx7953uqj0hqxn9k8rqx08y
+ * Year: 2025
  */
-const SRC_URL = 'https://github.com/ExperiBass/scriptable-scripts/raw/master/LibFoxxo.js'
-const UPDATE_PERIOD = 7 // days
 
 // Classes
 
@@ -77,38 +74,6 @@ class ProgressBar {
 }
 
 module.exports = {
-    /**
-     * Method to update your scripts. All it does is update, you'll have to implement your own update cycle code.
-     * An example is at the bottom of this file.
-     * @param {string} filename The name of the file to update. You should pass `module.filename`.
-     * @param {string} srcurl URL to the source code. Needs to be plaintext.
-     * @param {FileManager} fs The FileManager for your script.
-     * @param {boolean} shouldPiggyback Update this helper script! Set to `true` if you want us to piggyback off your updating. Defaults to false.
-     * @param {*} alertOptions Options to pass to createAlert.
-     * @param {string} alertOptions.title
-     * @param {string} alertOptions.message
-     * @param {string} alertOptions.failMessage
-     * @returns {boolean} true if success, false otherwise.
-     */
-    async selfUpdate({ filepath, srcurl, fs, shouldPiggyback = false }) {
-        try {
-            const req = new Request(srcurl)
-            const newFile = await req.loadString()
-            fs.writeString(filepath, newFile)
-
-            if (shouldPiggyback) {
-                // piggyback off of the end user and update ourselves too
-                const lastUpdated = fs.modificationDate(module.filename)
-                if (module.exports.determineDaysFromNow(lastUpdated) >= UPDATE_PERIOD) {
-                    await module.exports.selfUpdate({ srcurl: SRC_URL, filepath: module.filename, fs: fs })
-                }
-            }
-            return true
-        } catch (e) {
-            console.error(`[LibFoxxo][selfUpdate]: ${e}`)
-            return false
-        }
-    },
     /**
      * CreateAlert
      * @param {*} title - Title of the alert.

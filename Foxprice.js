@@ -23,21 +23,16 @@
  * Heavily modified from the featured "Crypto Price" widget.
  * Name: Foxprice
  * Author: Ging
- * Year: 2022
+ * Year: 2025
  * Deps:
  * - https://github.com/supermamon/scriptable-no-background
- * - https://github.com/ExperiBass/scriptable-scripts/blob/master/LibFoxxo.js
-*/
-const PRESENT_SIZE = "Small"
+ * - https://github.com/0xf0xx0/scriptable-scripts/blob/master/LibFoxxo.js
+ */
+const PRESENT_SIZE = 'Small'
 const GREEN = new Color('#4AF956')
 const RED = new Color('#FD4E00')
 // Widget setup
-const {
-    isIniCloud, selfUpdate,
-    determineDaysFromNow,
-    createStack, createImage,
-    formatNumber, loadImage
-} = importModule('LibFoxxo')
+const { isIniCloud, determineDaysFromNow, createStack, createImage, formatNumber, loadImage } = importModule('LibFoxxo')
 const { transparent } = importModule('no-background')
 const FONT = Font.mediumSystemFont(16)
 
@@ -46,46 +41,35 @@ const params = args.widgetParameter?.split(',') ?? ['bitcoin', 'ethereum']
 // Select file source
 const files = isIniCloud(FileManager.local(), module.filename) ? FileManager.iCloud() : FileManager.local()
 
-// Self-update
-if (config.runsInApp) {
-    // check file update date
-    const UPDATE_PERIOD = 7 // days
-    const lastUpdated = files.modificationDate(module.filename)
-    if (determineDaysFromNow(lastUpdated) >= UPDATE_PERIOD) {
-        // Update
-        (await selfUpdate({
-            srcurl: `https://github.com/ExperiBass/scriptable-scripts/raw/master/${Script.name()}.js`,
-            filepath: module.filename, fs: files, shouldPiggyback: true
-        }))
-    }
-}
-
 const widget = new ListWidget()
 const DONT_UPDATE_UNTIL = 10 * 60 * 1000 // 10m
-widget.refreshAfterDate = new Date((new Date()).valueOf() + DONT_UPDATE_UNTIL) // make sure we're not abusing the ratelimit
+widget.refreshAfterDate = new Date(new Date().valueOf() + DONT_UPDATE_UNTIL) // make sure we're not abusing the ratelimit
 widget.backgroundImage = await transparent(Script.name())
 
 async function draw() {
     const data = await fetchCoinInfo(params)
     for (const { image, id, symbol, price, grow, growPercent } of data) {
         const rowStack = createStack({
-            parent: widget, padding: [2, 2, 0, 0],
-            align: 'center', verticalLayout: false
+            parent: widget,
+            padding: [2, 2, 0, 0],
+            align: 'center',
+            verticalLayout: false,
         })
 
-        if (config.runsInWidget && config.widgetFamily !== "small") {
+        if (config.runsInWidget && config.widgetFamily !== 'small') {
             rowStack.url = `https://www.coingecko.com/en/coins/${id}`
             const imageStack = createStack({ parent: rowStack, padding: [0, 0, 0, 5] })
             createImage({
                 parent: imageStack,
                 image: await loadImage(image),
-                width: 20, height: 20, align: 'left'
+                width: 20,
+                height: 20,
+                align: 'left',
             })
         }
         const symbolStack = createStack({ parent: rowStack, padding: [0, 0, 0, 5] })
         rowStack.addSpacer()
         const priceStack = createStack({ parent: rowStack, padding: [0, 0, 0, 0] })
-
 
         // The text
         const symbolText = symbolStack.addText(symbol)
@@ -96,7 +80,7 @@ async function draw() {
         priceText.font = FONT
         priceText.rightAlignText()
 
-        if (config.runsInWidget && config.widgetFamily === "small") {
+        if (config.runsInWidget && config.widgetFamily === 'small') {
             if (grow) {
                 priceText.textColor = GREEN
             } else {
@@ -104,7 +88,7 @@ async function draw() {
             }
         }
 
-        if (config.runsInWidget && config.widgetFamily !== "small") {
+        if (config.runsInWidget && config.widgetFamily !== 'small') {
             const percentStack = createStack({ parent: rowStack, padding: [0, 0, 8, 0] })
             const percentText = percentStack.addText(growPercent)
             if (grow) {
@@ -121,22 +105,22 @@ async function fetchCoinInfo(coinIDs) {
     const url = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${coinIDs.join(',')}`
     const req = new Request(url)
     let res = []
-    const apiResult = (await req.loadJSON())
+    const apiResult = await req.loadJSON()
     if (apiResult.status && apiResult.status.error_code) {
         // back off if we have a error
         const DONT_UPDATE_UNTIL = 30 * 60 * 1000 // 30m
-        widget.refreshAfterDate = new Date((new Date()).valueOf() + DONT_UPDATE_UNTIL)
+        widget.refreshAfterDate = new Date(new Date().valueOf() + DONT_UPDATE_UNTIL)
         return []
     }
 
     for (const coin of apiResult) {
         const info = {
             price: formatNumber(coin.current_price, { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
-            grow: (coin.price_change_24h > 0),
+            grow: coin.price_change_24h > 0,
             growPercent: `${coin.price_change_percentage_24h.toFixed(2)}%`, // i dont trust JS around negatives...
             symbol: coin.symbol.toUpperCase(),
             image: coin.image,
-            id: coin.id
+            id: coin.id,
         }
         res.push(info)
     }

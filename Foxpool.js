@@ -5,10 +5,10 @@
  * Displays mempool info from bitcoinexplorer.org (or a self-hosted instance).
  * Name: Foxpool
  * Author: Ging
- * Year: 2024
+ * Year: 2025
  * Deps:
  * - https://github.com/supermamon/scriptable-no-background
- * - https://github.com/ExperiBass/scriptable-scripts/blob/master/LibFoxxo.js
+ * - https://github.com/0xf0xx0/scriptable-scripts/blob/master/LibFoxxo.js
  */
 /// First parameter given is assumed to be the instance wanted
 
@@ -22,22 +22,6 @@ const params = args.widgetParameter?.split(',') ?? []
 
 // Select file source
 const files = isIniCloud(FileManager.local(), module.filename) ? FileManager.iCloud() : FileManager.local()
-
-// Self-update
-if (config.runsInApp) {
-    // check file update date
-    const UPDATE_PERIOD = 7 // days
-    const lastUpdated = files.modificationDate(module.filename)
-    if (determineDaysFromNow(lastUpdated) >= UPDATE_PERIOD) {
-        // Update
-        await selfUpdate({
-            srcurl: `https://github.com/ExperiBass/scriptable-scripts/raw/master/${Script.name()}.js`,
-            filepath: module.filename,
-            fs: files,
-            shouldPiggyback: true,
-        })
-    }
-}
 
 const widgetConf = {
     text: {
@@ -84,10 +68,10 @@ function formatBytes(bytes, decimals = 2) {
     return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))}${sizes[i]}`
 }
 // Required symbols
-const totalTxSymbol = getSymbol('creditcard.fill')
+const totalTxSymbol = getSymbol('water.waves')
 const totalSizeSymbol = getSymbol('macmini.fill') // ig this looks close enough to a drive
 const totalFeeSymbol = getSymbol('bitcoinsign.circle')
-const heightSymbol = getSymbol('tray.and.arrow.up.fill')
+const heightSymbol = getSymbol('books.vertical.fill')
 const hashrateSymbol = getSymbol('gearshape.2.fill')
 const diffSymbol = getSymbol('hammer.fill')
 
@@ -117,18 +101,15 @@ try {
 const topStack = widget.addStack()
 const mempoolStack = createStack({
     parent: topStack,
-    width: 67.5,
-    height: 115,
+    height: topStack.size.height,
     backgroundColor: '#00000000',
     borderColor: widgetConf.border.color,
     borderRadius: widgetConf.border.radius,
     borderWidth: widgetConf.border.width,
     verticalLayout: true,
 })
-topStack.addSpacer(5)
 const hashrateStack = createStack({
     parent: topStack,
-    width: mempoolStack.size.width,
     height: mempoolStack.size.height,
     backgroundColor: '#00000000',
     borderColor: widgetConf.border.color,
@@ -138,7 +119,6 @@ const hashrateStack = createStack({
 })
 const suggestedFeeStack = createStack({
     parent: widget,
-    width: 140,
     height: 20,
     backgroundColor: '#00000000',
     borderColor: widgetConf.border.color,
@@ -149,8 +129,6 @@ const suggestedFeeStack = createStack({
 })
 
 topStack.layoutHorizontally()
-topStack.size = new Size(140, 120)
-
 mempoolStack.spacing = widgetConf.spacing
 hashrateStack.spacing = widgetConf.spacing
 
@@ -193,7 +171,6 @@ txTextStack.addSpacer()
 // Mempool size
 const sizeImageStack = createStack({
     parent: mempoolStack,
-    width: mempoolStack.size.width,
     height: widgetConf.iconStackHeight,
     align: 'center',
 })
@@ -209,7 +186,6 @@ const sizeImage = createImage({
 sizeImageStack.addSpacer()
 const sizeTextStack = createStack({
     parent: mempoolStack,
-    width: mempoolStack.size.width,
     height: widgetConf.iconStackHeight,
     align: 'center',
 })
@@ -225,7 +201,6 @@ sizeTextStack.addSpacer()
 // Mempool fee
 const feeImageStack = createStack({
     parent: mempoolStack,
-    width: mempoolStack.size.width,
     height: widgetConf.iconStackHeight,
     align: 'center',
 })
@@ -262,7 +237,6 @@ feeTextStack.addSpacer()
 // Block height
 const heightImageStack = createStack({
     parent: hashrateStack,
-    width: hashrateStack.size.width,
     height: widgetConf.iconStackHeight,
     align: 'center',
 })
@@ -279,7 +253,6 @@ heightImageStack.addSpacer()
 
 const heightTextStack = createStack({
     parent: hashrateStack,
-    width: hashrateStack.size.width,
     align: 'center',
 })
 heightTextStack.addSpacer()
@@ -294,7 +267,6 @@ heightTextStack.addSpacer()
 // Global hashrate
 const hashrateImageStack = createStack({
     parent: hashrateStack,
-    width: hashrateStack.size.width,
     height: widgetConf.iconStackHeight,
     align: 'center',
 })
@@ -311,7 +283,6 @@ hashrateImageStack.addSpacer()
 
 const hashrateTextStack = createStack({
     parent: hashrateStack,
-    width: hashrateStack.size.width,
     align: 'center',
 })
 
@@ -328,7 +299,6 @@ hashrateTextStack.addSpacer()
 // Difficulty
 const diffImageStack = createStack({
     parent: hashrateStack,
-    width: hashrateStack.size.width,
     height: widgetConf.iconStackHeight,
     align: 'center',
 })
@@ -345,7 +315,6 @@ diffImageStack.addSpacer()
 
 const diffTextStack = createStack({
     parent: hashrateStack,
-    width: hashrateStack.size.width,
     align: 'center',
 })
 diffTextStack.addSpacer()
