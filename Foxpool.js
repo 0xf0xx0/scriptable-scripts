@@ -13,8 +13,17 @@
 /// First parameter given is assumed to be the instance wanted
 
 // Widget setup
-const { isIniCloud, determineDaysFromNow, selfUpdate, getSymbol, createStack, createImage, createText, formatNumber } =
-    importModule('LibFoxxo')
+const {
+    isIniCloud,
+    determineDaysFromNow,
+    selfUpdate,
+    getSymbol,
+    createStack,
+    createImage,
+    createText,
+    formatNumber,
+    ProgressBar,
+} = importModule('LibFoxxo')
 const { transparent } = importModule('no-background')
 
 const params = args.widgetParameter?.split(',') ?? []
@@ -51,13 +60,14 @@ const widget = new ListWidget()
 widget.refreshAfterDate = new Date(new Date().valueOf() + DONT_UPDATE_UNTIL)
 widget.backgroundImage = await transparent(Script.name())
 widget.url = params[0] || 'https://bitcoinexplorer.org'
+console.log(widget.url)
 widget.setPadding(0, 0, 0, 0)
 
 const API_URL = `${widget.url}/api` // trailing slash left off
 const MIN_TEXT_SCALE = 0.5
 // https://stackoverflow.com/a/18650828
 function formatBytes(bytes, decimals = 2) {
-    if (!+bytes) return '0 Bytes'
+    if (!+bytes) return '0 vB'
 
     const k = 1024
     const dm = decimals < 0 ? 0 : decimals
@@ -132,7 +142,7 @@ topStack.layoutHorizontally()
 mempoolStack.spacing = widgetConf.spacing
 hashrateStack.spacing = widgetConf.spacing
 
-//////////////////
+//////////////////.
 // Mempool Info //
 //////////////////
 
@@ -264,7 +274,7 @@ createText({
 })
 heightTextStack.addSpacer()
 
-// Global hashrate
+// Mempool usage
 const hashrateImageStack = createStack({
     parent: hashrateStack,
     height: widgetConf.iconStackHeight,
@@ -281,50 +291,30 @@ const hashrateImage = createImage({
 })
 hashrateImageStack.addSpacer()
 
-const hashrateTextStack = createStack({
+const mempoolUsageStack = createStack({
     parent: hashrateStack,
     align: 'center',
 })
 
-hashrateTextStack.addSpacer()
-const hashrateText = `${formatNumber((miningData.raw / miningData.unitMultiplier).toFixed(2))}${miningData.unitAbbreviation}`
-createText({
-    parent: hashrateTextStack,
-    content: hashrateText,
-    minimumScaleFactor: MIN_TEXT_SCALE,
-    font: widgetConf.font.small,
+mempoolUsageStack.addSpacer()
+const usagePct = ((mempoolData.usage / mempoolData.maxmempool) * 100).toPrecision(3)
+const mempoolUsageBar = await ProgressBar({
+    vertical: true,
+    width: 10,
+    backgroundColor: '#00000000',
+    fillColor: '#fff',
+    progressPercentage: usagePct,
+    cornerRadius: widgetConf.border.radius / 3,
 })
-hashrateTextStack.addSpacer()
-
-// Difficulty
-const diffImageStack = createStack({
-    parent: hashrateStack,
-    height: widgetConf.iconStackHeight,
-    align: 'center',
-})
-diffImageStack.addSpacer()
-const diffImage = createImage({
-    parent: diffImageStack,
-    width: widgetConf.iconDims,
-    height: widgetConf.iconDims,
-    color: widgetConf.text.color,
-    image: diffSymbol.image,
-    align: 'center',
-})
-diffImageStack.addSpacer()
-
-const diffTextStack = createStack({
+mempoolUsageStack.addImage(Image.fromData(Data.fromBase64String(mempoolUsageBar)))
+mempoolUsageStack.addSpacer()
+const usageTextStack = createStack({
     parent: hashrateStack,
     align: 'center',
 })
-diffTextStack.addSpacer()
-createText({
-    parent: diffTextStack,
-    content: '', //formatNumber(miningData.string1, { notation: 'compact', compactDisplay: 'short' }),
-    minimumScaleFactor: MIN_TEXT_SCALE,
-    font: widgetConf.font.small,
-})
-diffTextStack.addSpacer()
+usageTextStack.addSpacer()
+createText({ content: `${usagePct}%`, parent: usageTextStack })
+usageTextStack.addSpacer()
 
 ///////////////////////
 // Suggested tx fees //

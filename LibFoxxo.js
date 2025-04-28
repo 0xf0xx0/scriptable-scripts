@@ -11,66 +11,58 @@
 
 // Classes
 
-// Horizontal progress bar
-class ProgressBar {
-    #ctx = new DrawContext()
-    constructor({
-        width = 100,
-        height = 20,
-        fillColor = '#7814CF',
-        backgroundColor = '#00ffff',
-        cornerRadius = 10,
-        respectScreenScale = true,
-        progressPercentage = 0,
-        progressSteps = 100, // Progress precision
-        transparent = true, // background
-        vertical = false,
-        startFromTop = false,
-    }) {
-        this.#ctx.opaque = !transparent
-        this.#ctx.size = new Size(width, height)
-        this.#ctx.respectScreenScale = respectScreenScale
+// progress bar
+async function ProgressBar(args) {
+    args = {
+        width: 100,
+        height: 20,
+        fillColor: '#7814CF',
+        backgroundColor: '#00ffff',
+        cornerRadius: 10,
+        respectScreenScale: true,
+        progressPercentage: 10,
+        progressSteps: 100, // Progress precision
+        transparent: true, // background
+        vertical: false,
+        startFromTop: false,
+        ...args,
+    }
+    if (respectScreenScale) {
+        args.width = Device.screenScale() * args.width
+        args.height = Device.screenScale() * args.height
+    }
+    let progressStepLength
+    if (args.vertical) {
+        progressStepLength = (args.height / args.progressSteps).toFixed(3)
+    } else {
+        progressStepLength = (args.width / args.progressSteps).toFixed(3)
+    }
 
-        let progressStepLength
-        if (vertical) {
-            progressStepLength = (this.#ctx.size.height / progressSteps).toFixed(3)
-        } else {
-            progressStepLength = (this.#ctx.size.width / progressSteps).toFixed(3)
+    // determine the number of pixels needed
+    const progressLength = progressStepLength * args.progressPercentage
+    let offset = 0
+    let width = args.width
+    let height = args.height
+
+    if (args.vertical) {
+        if (!args.startFromTop) {
+            offset = args.height - progressLength
         }
+        height = progressLength
+    } else {
+        width = progressLength
+    }
 
-        // draw the bar background
-        const bgPath = new Path()
-        const bgRect = new Rect(0, 0, this.#ctx.size.width, this.#ctx.size.height)
-        bgPath.addRoundedRect(bgRect, cornerRadius, cornerRadius)
-        this.#ctx.addPath(bgPath)
-        this.#ctx.setFillColor(new Color(backgroundColor))
-        this.#ctx.fillPath()
-
-        // draw the progressbar
-        // determine the number of pixels needed
-        const progressLength = progressStepLength * progressPercentage
-        const progressPath = new Path()
-        let progressRect
-        if (vertical) {
-            let offset = 0
-            if (startFromTop) {
-                offset = this.#ctx.size.height - progressLength
-            }
-            progressRect = new Rect(0, offset, this.#ctx.size.width, progressLength)
-        } else {
-            progressRect = new Rect(0, 0, progressLength, this.#ctx.size.height)
-        }
-        progressPath.addRoundedRect(progressRect, cornerRadius, cornerRadius)
-        this.#ctx.addPath(progressPath)
-        this.#ctx.setFillColor(new Color(fillColor))
-        this.#ctx.fillPath()
-    }
-    toImage() {
-        return this.#ctx.getImage()
-    }
-    get canvas() {
-        return this.#ctx
-    }
+    const view = new WebView()
+    const imageb64 = view.evaluateJavaScript(
+        `const canvas=document.createElement('canvas');const ctx=canvas.getContext('2d');canvas.width=${args.width};canvas.height=${args.height};
+        /*/draw bar bg/*/ctx.roundRect(0, 0,${args.width},${args.height},${args.cornerRadius});ctx.fillStyle="${args.backgroundColor}";ctx.fill();
+        /*/clip bar/*/ctx.beginPath();ctx.roundRect(0, 0, ${args.width}, ${args.height}, ${args.cornerRadius});ctx.clip();
+        /*/draw bar/*/ctx.beginPath();ctx.roundRect(0, ${offset}, ${width}, ${height}, 0);ctx.fillStyle="${args.fillColor}";ctx.fill();
+        /*/output/*/completion(canvas.toDataURL().split(',')[1])`,
+        true
+    )
+    return Image.fromData(Data.fromBase64String(await imageb64))
 }
 
 module.exports = {
@@ -180,8 +172,6 @@ module.exports = {
     createImage({
         parent = null,
         image = null,
-        width = 0,
-        height = 0,
         resizable = true,
         color = null,
         align = 'left', // 'left', 'center', 'right'
@@ -191,7 +181,6 @@ module.exports = {
                 throw Error('parent not defined')
             }
             const img = parent.addImage(image)
-            img.imageSize = new Size(width, height)
             img.resizable = resizable
             if (color) {
                 img.tintColor = new Color(color)
@@ -199,7 +188,7 @@ module.exports = {
             img[`${align.toLowerCase()}AlignImage`]()
             return img
         } catch (e) {
-            throw Error(`[LibFoxxo][createImage]: ${e.stack}`)
+            throw Error(`[LibFoxxo][createImage]: ${e}`)
         }
     },
     createText({
