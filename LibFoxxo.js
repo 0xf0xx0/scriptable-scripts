@@ -11,60 +11,6 @@
 
 // Classes
 
-// progress bar
-async function ProgressBar(args) {
-    args = {
-        width: 100,
-        height: 20,
-        fillColor: '#7814CF',
-        backgroundColor: '#00ffff',
-        cornerRadius: 10,
-        respectScreenScale: true,
-        progressPercentage: 10,
-        progressSteps: 100, // Progress precision
-        transparent: true, // background
-        vertical: false,
-        startFromTop: false,
-        ...args,
-    }
-    if (respectScreenScale) {
-        args.width = Device.screenScale() * args.width
-        args.height = Device.screenScale() * args.height
-    }
-    let progressStepLength
-    if (args.vertical) {
-        progressStepLength = (args.height / args.progressSteps).toFixed(3)
-    } else {
-        progressStepLength = (args.width / args.progressSteps).toFixed(3)
-    }
-
-    // determine the number of pixels needed
-    const progressLength = progressStepLength * args.progressPercentage
-    let offset = 0
-    let width = args.width
-    let height = args.height
-
-    if (args.vertical) {
-        if (!args.startFromTop) {
-            offset = args.height - progressLength
-        }
-        height = progressLength
-    } else {
-        width = progressLength
-    }
-
-    const view = new WebView()
-    const imageb64 = view.evaluateJavaScript(
-        `const canvas=document.createElement('canvas');const ctx=canvas.getContext('2d');canvas.width=${args.width};canvas.height=${args.height};
-        /*/draw bar bg/*/ctx.roundRect(0, 0,${args.width},${args.height},${args.cornerRadius});ctx.fillStyle="${args.backgroundColor}";ctx.fill();
-        /*/clip bar/*/ctx.beginPath();ctx.roundRect(0, 0, ${args.width}, ${args.height}, ${args.cornerRadius});ctx.clip();
-        /*/draw bar/*/ctx.beginPath();ctx.roundRect(0, ${offset}, ${width}, ${height}, 0);ctx.fillStyle="${args.fillColor}";ctx.fill();
-        /*/output/*/completion(canvas.toDataURL().split(',')[1])`,
-        true
-    )
-    return Image.fromData(Data.fromBase64String(await imageb64))
-}
-
 module.exports = {
     /**
      * CreateAlert
@@ -249,7 +195,58 @@ module.exports = {
             .filter((v) => (padding ? !v.startsWith('00') : !v.startsWith('0'))) // then filter out 0 values (["2d", "0h", "13m"] -> ["2d", "13m"])
             .join('') // and finally join ("2d13m")
     },
-    ProgressBar,
+    async progressBar(args) {
+        args = {
+            width: 100,
+            height: 20,
+            fillColor: '#7814CF',
+            backgroundColor: '#00ffff',
+            cornerRadius: 10,
+            respectScreenScale: true,
+            progressPercentage: 10,
+            progressSteps: 100, // Progress precision
+            transparent: true, // background
+            vertical: false,
+            startFromTop: false,
+            ...args,
+        }
+        if (args.respectScreenScale) {
+            args.width = Device.screenScale() * args.width
+            args.height = Device.screenScale() * args.height
+        }
+        let progressStepLength
+        if (args.vertical) {
+            progressStepLength = (args.height / args.progressSteps).toFixed(3)
+        } else {
+            progressStepLength = (args.width / args.progressSteps).toFixed(3)
+        }
+
+        // determine the number of pixels needed
+        const progressLength = progressStepLength * args.progressPercentage
+        let offset = 0
+        let width = args.width
+        let height = args.height
+
+        if (args.vertical) {
+            if (!args.startFromTop) {
+                offset = args.height - progressLength
+            }
+            height = progressLength
+        } else {
+            width = progressLength
+        }
+
+        const view = new WebView()
+        const imageb64 = view.evaluateJavaScript(
+            `const canvas=document.createElement('canvas');const ctx=canvas.getContext('2d');canvas.width=${args.width};canvas.height=${args.height};
+            /*/draw bg/*/ctx.roundRect(0,0,${args.width},${args.height},${args.cornerRadius});ctx.fillStyle="${args.backgroundColor}";ctx.fill();
+            /*/clip bar/*/ctx.beginPath();ctx.roundRect(0,0,${args.width},${args.height},${args.cornerRadius});ctx.clip();
+            /*/draw bar/*/ctx.beginPath();ctx.roundRect(0,${offset},${width},${height},0);ctx.fillStyle="${args.fillColor}";ctx.fill();
+            /*/b64 out/*/completion(canvas.toDataURL().split(',')[1])`,
+            true
+        )
+        return Image.fromData(Data.fromBase64String(await imageb64))
+    },
     version: 1,
 }
 Script.complete()

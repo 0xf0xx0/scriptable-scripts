@@ -22,7 +22,7 @@ const {
     createImage,
     createText,
     formatNumber,
-    ProgressBar,
+    progressBar,
 } = importModule('LibFoxxo')
 const { transparent } = importModule('no-background')
 
@@ -108,26 +108,26 @@ try {
 }
 
 // Build main content stacks
-const topStack = widget.addStack()
-const mempoolStack = createStack({
-    parent: topStack,
-    height: topStack.size.height,
+const rootStack = widget.addStack()
+const leftStack = createStack({
+    parent: rootStack,
+    height: rootStack.size.height,
     backgroundColor: '#00000000',
     borderColor: widgetConf.border.color,
     borderRadius: widgetConf.border.radius,
     borderWidth: widgetConf.border.width,
     verticalLayout: true,
 })
-const hashrateStack = createStack({
-    parent: topStack,
-    height: mempoolStack.size.height,
+const rightStack = createStack({
+    parent: rootStack,
+    height: leftStack.size.height,
     backgroundColor: '#00000000',
     borderColor: widgetConf.border.color,
     borderRadius: widgetConf.border.radius,
     borderWidth: widgetConf.border.width,
     verticalLayout: true,
 })
-const suggestedFeeStack = createStack({
+const bottomStack = createStack({
     parent: widget,
     height: 20,
     backgroundColor: '#00000000',
@@ -138,9 +138,9 @@ const suggestedFeeStack = createStack({
     align: 'center',
 })
 
-topStack.layoutHorizontally()
-mempoolStack.spacing = widgetConf.spacing
-hashrateStack.spacing = widgetConf.spacing
+rootStack.layoutHorizontally()
+leftStack.spacing = widgetConf.spacing
+rightStack.spacing = widgetConf.spacing
 
 //////////////////.
 // Mempool Info //
@@ -148,8 +148,8 @@ hashrateStack.spacing = widgetConf.spacing
 
 // TX count
 const txImageStack = createStack({
-    parent: mempoolStack,
-    width: mempoolStack.size.width,
+    parent: leftStack,
+    width: leftStack.size.width,
     height: widgetConf.iconStackHeight,
     align: 'center',
 })
@@ -164,8 +164,8 @@ const txImage = createImage({
 })
 txImageStack.addSpacer()
 const txTextStack = createStack({
-    parent: mempoolStack,
-    width: mempoolStack.size.width,
+    parent: leftStack,
+    width: leftStack.size.width,
     height: widgetConf.iconStackHeight,
     align: 'center',
 })
@@ -180,7 +180,7 @@ txTextStack.addSpacer()
 
 // Mempool size
 const sizeImageStack = createStack({
-    parent: mempoolStack,
+    parent: leftStack,
     height: widgetConf.iconStackHeight,
     align: 'center',
 })
@@ -195,7 +195,7 @@ const sizeImage = createImage({
 })
 sizeImageStack.addSpacer()
 const sizeTextStack = createStack({
-    parent: mempoolStack,
+    parent: leftStack,
     height: widgetConf.iconStackHeight,
     align: 'center',
 })
@@ -210,7 +210,7 @@ sizeTextStack.addSpacer()
 
 // Mempool fee
 const feeImageStack = createStack({
-    parent: mempoolStack,
+    parent: leftStack,
     height: widgetConf.iconStackHeight,
     align: 'center',
 })
@@ -225,8 +225,8 @@ const feeImage = createImage({
 })
 feeImageStack.addSpacer()
 const feeTextStack = createStack({
-    parent: mempoolStack,
-    width: mempoolStack.size.width,
+    parent: leftStack,
+    width: leftStack.size.width,
     height: widgetConf.iconStackHeight,
     align: 'center',
 })
@@ -246,7 +246,7 @@ feeTextStack.addSpacer()
 
 // Block height
 const heightImageStack = createStack({
-    parent: hashrateStack,
+    parent: rightStack,
     height: widgetConf.iconStackHeight,
     align: 'center',
 })
@@ -262,7 +262,7 @@ const heightImage = createImage({
 heightImageStack.addSpacer()
 
 const heightTextStack = createStack({
-    parent: hashrateStack,
+    parent: rightStack,
     align: 'center',
 })
 heightTextStack.addSpacer()
@@ -276,7 +276,7 @@ heightTextStack.addSpacer()
 
 // Mempool usage
 const hashrateImageStack = createStack({
-    parent: hashrateStack,
+    parent: rightStack,
     height: widgetConf.iconStackHeight,
     align: 'center',
 })
@@ -292,13 +292,13 @@ const hashrateImage = createImage({
 hashrateImageStack.addSpacer()
 
 const mempoolUsageStack = createStack({
-    parent: hashrateStack,
+    parent: rightStack,
     align: 'center',
 })
 
 mempoolUsageStack.addSpacer()
 const usagePct = ((mempoolData.usage / mempoolData.maxmempool) * 100).toPrecision(3)
-const mempoolUsageBar = await ProgressBar({
+const mempoolUsageBar = await progressBar({
     vertical: true,
     width: 10,
     backgroundColor: '#00000000',
@@ -306,10 +306,10 @@ const mempoolUsageBar = await ProgressBar({
     progressPercentage: usagePct,
     cornerRadius: widgetConf.border.radius / 3,
 })
-mempoolUsageStack.addImage(Image.fromData(Data.fromBase64String(mempoolUsageBar)))
+mempoolUsageStack.addImage(mempoolUsageBar)
 mempoolUsageStack.addSpacer()
 const usageTextStack = createStack({
-    parent: hashrateStack,
+    parent: rightStack,
     align: 'center',
 })
 usageTextStack.addSpacer()
@@ -321,8 +321,8 @@ usageTextStack.addSpacer()
 ///////////////////////
 
 const suggestedFeeTextStack = createStack({
-    parent: suggestedFeeStack,
-    width: suggestedFeeStack.size.width,
+    parent: bottomStack,
+    width: bottomStack.size.width,
     align: 'center',
 })
 suggestedFeeTextStack.addSpacer()
