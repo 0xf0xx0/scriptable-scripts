@@ -302,7 +302,7 @@ const mempoolUsageBar = await progressBar({
     vertical: true,
     width: 12,
     height: 100,
-    backgroundColor: '#00000000',
+    backgroundColor: '#0000',
     fillColor: '#fff',
     progressPercentage: usagePct,
     cornerRadius: widgetConf.border.radius,
