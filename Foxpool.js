@@ -60,7 +60,7 @@ const widget = new ListWidget()
 widget.refreshAfterDate = new Date(new Date().valueOf() + DONT_UPDATE_UNTIL)
 widget.backgroundImage = await transparent(Script.name())
 widget.url = params[0] || 'https://bitcoinexplorer.org'
-console.log(widget.url)
+
 widget.setPadding(0, 0, 0, 0)
 
 const API_URL = `${widget.url}/api` // trailing slash left off
@@ -79,10 +79,10 @@ function formatBytes(bytes, decimals = 2) {
 }
 // Required symbols
 const totalTxSymbol = getSymbol('water.waves')
-const totalSizeSymbol = getSymbol('macmini.fill') // ig this looks close enough to a drive
-const totalFeeSymbol = getSymbol('bitcoinsign.circle')
-const heightSymbol = getSymbol('books.vertical.fill')
-const hashrateSymbol = getSymbol('gearshape.2.fill')
+const totalSizeSymbol = getSymbol('opticaldiscdrive.fill')
+const totalFeeSymbol = getSymbol('bitcoinsign')
+const heightSymbol = getSymbol('archivebox.fill')
+const hashrateSymbol = getSymbol('bitcoinsign.gauge.chart.leftthird.topthird.rightthird')
 const diffSymbol = getSymbol('hammer.fill')
 
 // Prebuild requests
@@ -300,11 +300,12 @@ mempoolUsageStack.addSpacer()
 const usagePct = ((mempoolData.usage / mempoolData.maxmempool) * 100).toPrecision(3)
 const mempoolUsageBar = await progressBar({
     vertical: true,
-    width: 10,
+    width: 12,
+    height: 100,
     backgroundColor: '#00000000',
     fillColor: '#fff',
     progressPercentage: usagePct,
-    cornerRadius: widgetConf.border.radius / 3,
+    cornerRadius: widgetConf.border.radius,
 })
 mempoolUsageStack.addImage(mempoolUsageBar)
 mempoolUsageStack.addSpacer()

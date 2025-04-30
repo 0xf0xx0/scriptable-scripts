@@ -118,6 +118,8 @@ module.exports = {
     createImage({
         parent = null,
         image = null,
+        width = undefined,
+        height = undefined,
         resizable = true,
         color = null,
         align = 'left', // 'left', 'center', 'right'
@@ -128,6 +130,9 @@ module.exports = {
             }
             const img = parent.addImage(image)
             img.resizable = resizable
+            if (width && height) {
+                img.imageSize = new Size(width, height)
+            }
             if (color) {
                 img.tintColor = new Color(color)
             }
@@ -207,7 +212,7 @@ module.exports = {
             progressSteps: 100, // Progress precision
             transparent: true, // background
             vertical: false,
-            startFromTop: false,
+            reverseDirection: false,
             ...args,
         }
         if (args.respectScreenScale) {
@@ -223,16 +228,20 @@ module.exports = {
 
         // determine the number of pixels needed
         const progressLength = progressStepLength * args.progressPercentage
-        let offset = 0
+        let offsety = 0
+        let offsetx = 0
         let width = args.width
         let height = args.height
 
         if (args.vertical) {
-            if (!args.startFromTop) {
-                offset = args.height - progressLength
+            if (!args.reverseDirection) {
+                offsety = args.height - progressLength
             }
             height = progressLength
         } else {
+            if (args.reverseDirection) {
+                offsetx = args.width - progressLength
+            }
             width = progressLength
         }
 
@@ -241,7 +250,7 @@ module.exports = {
             `const canvas=document.createElement('canvas');const ctx=canvas.getContext('2d');canvas.width=${args.width};canvas.height=${args.height};
             /*/draw bg/*/ctx.roundRect(0,0,${args.width},${args.height},${args.cornerRadius});ctx.fillStyle="${args.backgroundColor}";ctx.fill();
             /*/clip bar/*/ctx.beginPath();ctx.roundRect(0,0,${args.width},${args.height},${args.cornerRadius});ctx.clip();
-            /*/draw bar/*/ctx.beginPath();ctx.roundRect(0,${offset},${width},${height},0);ctx.fillStyle="${args.fillColor}";ctx.fill();
+            /*/draw bar/*/ctx.beginPath();ctx.roundRect(${offsetx},${offsety},${width},${height},0);ctx.fillStyle="${args.fillColor}";ctx.fill();
             /*/b64 out/*/completion(canvas.toDataURL().split(',')[1])`,
             true
         )
