@@ -261,11 +261,18 @@ module.exports = {
 
         const view = new WebView()
         const imageb64 = view.evaluateJavaScript(
-            `const canvas=document.createElement('canvas');const ctx=canvas.getContext('2d');canvas.width=${args.width};canvas.height=${args.height};
-            /*/draw bg/*/ctx.roundRect(0,0,${args.width},${args.height},${args.cornerRadius});ctx.fillStyle="${args.backgroundColor}";ctx.fill();
-            /*/clip bar/*/ctx.beginPath();ctx.roundRect(0,0,${args.width},${args.height},${args.cornerRadius});ctx.clip();
-            /*/draw bar/*/ctx.beginPath();ctx.roundRect(${offsetx},${offsety},${width},${height},0);ctx.fillStyle="${args.fillColor}";ctx.fill();
-            /*/b64 out/*/completion(canvas.toDataURL().split(',')[1])`,
+            `const canvas=document.createElement('canvas');const ctx=canvas.getContext('2d');
+            canvas.width=${args.width};canvas.height=${args.height};
+            /*/draw bg/*/
+            ctx.roundRect(0,0,${args.width},${args.height},${args.cornerRadius});
+            ctx.fillStyle="${args.backgroundColor}";ctx.fill();
+            /*/clip bar/*/
+            ctx.beginPath();ctx.roundRect(0,0,${args.width},${args.height},${args.cornerRadius});ctx.clip();
+            /*/draw bar/*/
+            ctx.beginPath();ctx.roundRect(${offsetx},${offsety},${width},${height},0);
+            ctx.fillStyle="${args.fillColor}";ctx.fill();
+            /*/b64 out/*/
+            completion(canvas.toDataURL().split(',')[1])`,
             true
         )
         return Image.fromData(Data.fromBase64String(await imageb64))
