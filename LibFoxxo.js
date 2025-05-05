@@ -9,7 +9,10 @@
  * Year: 2025
  */
 
-// Classes
+function err(e) {
+    e.message = `${e}\n${e.stack}`
+    return e.message
+}
 
 module.exports = {
     /**
@@ -76,101 +79,111 @@ module.exports = {
         }
         return symbol
     },
-    createStack({
-        parent = null,
-        width = 0, // px
-        height = 0, // px
-        backgroundColor = null, // hexadecimal notation
-        borderColor = '#000000',
-        borderRadius = 4, // px
-        borderWidth = 0, // px
-        verticalLayout = false,
-        padding = [0, 0, 0, 0], // array of 4 numbers
-        align = 'top', // 'top', 'center', 'bottom'
-    }) {
+    createStack(args) {
+        args = {
+            parent: null,
+            width: 0, // px
+            height: 0, // px
+            backgroundColor: null, // hex rgba
+            borderColor: '#000000', // hex rgba
+            borderRadius: 4, // px
+            borderWidth: 0, // px
+            verticalLayout: false,
+            padding: [0, 0, 0, 0], // array of px
+            align: 'top', // 'top', 'center', 'bottom'
+            ...args,
+        }
+
         try {
-            if (!parent) {
+            if (!args.parent) {
                 throw Error('parent not defined')
             }
-            const stacc = parent.addStack()
+            const stacc = args.parent.addStack()
 
-            stacc.size = new Size(width, height)
-            stacc.borderWidth = borderWidth
-            stacc.borderColor = new Color(borderColor)
-            stacc.cornerRadius = borderRadius
+            stacc.size = new Size(args.width, args.height)
+            stacc.borderWidth = args.borderWidth
+            stacc.borderColor = new Color(args.borderColor)
+            stacc.cornerRadius = args.borderRadius
 
-            if (backgroundColor) {
-                stacc.backgroundColor = new Color(backgroundColor)
+            if (args.backgroundColor) {
+                stacc.backgroundColor = new Color(args.backgroundColor)
             }
-            if (verticalLayout) {
+            if (args.verticalLayout) {
                 stacc.layoutVertically()
             } else {
                 stacc.layoutHorizontally()
             }
-            stacc[`${align.toLowerCase()}AlignContent`]()
-            stacc.setPadding(...padding)
+            stacc[`${args.align.toLowerCase()}AlignContent`]()
+            stacc.setPadding(...args.padding)
 
             return stacc
         } catch (e) {
-            throw Error(`[LibFoxxo][createStack]: ${e.stack}`)
+            throw Error(`[LibFoxxo][createStack]: ${err(e)}`)
         }
     },
-    createImage({
-        parent = null,
-        image = null,
-        width = undefined,
-        height = undefined,
-        resizable = true,
-        color = null,
-        align = 'left', // 'left', 'center', 'right'
-    }) {
+    createImage(args) {
+        args = {
+            parent: null,
+            image: null,
+            size: null, /// Size
+            resizable: true,
+            color: null,
+            align: 'left', // 'left', 'center', 'right'
+            ...args,
+        }
+
         try {
-            if (!parent) {
+            if (!args.parent) {
                 throw Error('parent not defined')
             }
-            const img = parent.addImage(image)
-            img.resizable = resizable
-            if (width && height) {
-                img.imageSize = new Size(width, height)
+            const img = args.parent.addImage(args.image)
+            img.resizable = args.resizable
+            if (args.size) {
+                img.imageSize = args.size
             }
-            if (color) {
-                img.tintColor = new Color(color)
+            if (args.color) {
+                img.tintColor = new Color(args.color)
             }
-            img[`${align.toLowerCase()}AlignImage`]()
+            img[`${args.align.toLowerCase()}AlignImage`]()
             return img
         } catch (e) {
             throw Error(`[LibFoxxo][createImage]: ${e}`)
         }
     },
-    createText({
-        parent = null,
-        content = '',
-        font = null,
-        maxLines = 0,
-        minimumScaleFactor = 1,
-        url = null,
-        centered = false,
-        align = 'left', // 'left', 'center', 'right'
-    }) {
+    createText(args = {}) {
+        args = {
+            parent: null,
+            content: '',
+            font: null,
+            maxLines: 0,
+            minimumScaleFactor: 1,
+            url: null,
+            centered: false,
+            textalign: 'left', // 'left', 'center', 'right'
+            ...args,
+        }
+
         try {
-            if (!parent) {
+            if (!args.parent) {
                 throw Error('parent not defined')
             }
-            centered ? parent.addSpacer() : ''
-            const txt = parent.addText(content)
-            centered ? parent.addSpacer() : ''
-            txt.lineLimit = maxLines
-            if (font) {
-                txt.font = font
+
+            args.centered ? args.parent.addSpacer() : null
+            const txt = args.parent.addText(args.content)
+            args.centered ? args.parent.addSpacer() : null
+
+            txt.lineLimit = args.maxLines
+            txt.minimumScaleFactor = args.minimumScaleFactor
+            if (args.font) {
+                txt.font = args.font
             }
-            txt.minimumScaleFactor = minimumScaleFactor
-            if (url) {
-                txt.url = url
+            if (args.url) {
+                txt.url = args.url
             }
-            txt[`${align.toLowerCase()}AlignText`]()
+            txt[`${args.textalign.toLowerCase()}AlignText`]()
             return txt
         } catch (e) {
-            throw Error(`[LibFoxxo][createText]: ${e.stack}`)
+            throw Error(`[LibFoxxo][createText]: ${err(e)}`)
         }
     },
     determineDaysFromNow(date) {
@@ -215,6 +228,7 @@ module.exports = {
             reverseDirection: false,
             ...args,
         }
+
         if (args.respectScreenScale) {
             args.width = Device.screenScale() * args.width
             args.height = Device.screenScale() * args.height
@@ -256,6 +270,6 @@ module.exports = {
         )
         return Image.fromData(Data.fromBase64String(await imageb64))
     },
-    version: 1,
+    version: '1.0.0',
 }
 Script.complete()

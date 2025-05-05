@@ -10,7 +10,6 @@
  * - https://github.com/supermamon/scriptable-no-background
  * - https://github.com/0xf0xx0/scriptable-scripts/blob/master/LibFoxxo.js
  */
-/// First parameter given is assumed to be the instance wanted
 
 // Widget setup
 const {
@@ -26,8 +25,8 @@ const {
 } = importModule('LibFoxxo')
 const { transparent } = importModule('no-background')
 
+/// First parameter given is assumed to be the instance wanted
 const params = args.widgetParameter?.split(',') ?? []
-// [0] = explorer instance
 
 // Select file source
 const files = isIniCloud(FileManager.local(), module.filename) ? FileManager.iCloud() : FileManager.local()
@@ -48,7 +47,7 @@ const widgetConf = {
     },
     spacing: 2,
     iconStackHeight: 0,
-    iconDims: 20,
+    iconSize: new Size(20, 20),
 }
 
 // Don't update until 5 minutes have passed
@@ -75,15 +74,15 @@ function formatBytes(bytes, decimals = 2) {
 
     const i = Math.floor(Math.log(bytes) / Math.log(k))
 
-    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))}${sizes[i]}`
+    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`
 }
 // Required symbols
-const totalTxSymbol = getSymbol('water.waves')
+const totalTxSymbol = getSymbol('basket.fill')
 const totalSizeSymbol = getSymbol('opticaldiscdrive.fill')
 const totalFeeSymbol = getSymbol('bitcoinsign')
 const heightSymbol = getSymbol('archivebox.fill')
 const hashrateSymbol = getSymbol('bitcoinsign.gauge.chart.leftthird.topthird.rightthird')
-const diffSymbol = getSymbol('hammer.fill')
+const blockSymbol = getSymbol('cube.fill')
 
 // Prebuild requests
 const mempoolInfo = new Request(`${API_URL}/mempool/summary`)
@@ -112,29 +111,16 @@ const rootStack = widget.addStack()
 const leftStack = createStack({
     parent: rootStack,
     height: rootStack.size.height,
-    backgroundColor: '#00000000',
-    borderColor: widgetConf.border.color,
-    borderRadius: widgetConf.border.radius,
-    borderWidth: widgetConf.border.width,
     verticalLayout: true,
 })
 const rightStack = createStack({
     parent: rootStack,
     height: leftStack.size.height,
-    backgroundColor: '#00000000',
-    borderColor: widgetConf.border.color,
-    borderRadius: widgetConf.border.radius,
-    borderWidth: widgetConf.border.width,
     verticalLayout: true,
 })
 const bottomStack = createStack({
     parent: widget,
     height: 20,
-    backgroundColor: '#00000000',
-    borderColor: widgetConf.border.color,
-    borderRadius: widgetConf.border.radius,
-    borderWidth: widgetConf.border.width,
-    verticalLayout: false,
     align: 'center',
 })
 
@@ -142,7 +128,7 @@ rootStack.layoutHorizontally()
 leftStack.spacing = widgetConf.spacing
 rightStack.spacing = widgetConf.spacing
 
-//////////////////.
+//////////////////
 // Mempool Info //
 //////////////////
 
@@ -156,8 +142,7 @@ const txImageStack = createStack({
 txImageStack.addSpacer()
 const txImage = createImage({
     parent: txImageStack,
-    width: widgetConf.iconDims,
-    height: widgetConf.iconDims,
+    size: widgetConf.iconSize,
     color: widgetConf.text.color,
     image: totalTxSymbol.image,
     align: 'center',
@@ -179,6 +164,7 @@ createText({
 txTextStack.addSpacer()
 
 // Mempool size
+
 const sizeImageStack = createStack({
     parent: leftStack,
     height: widgetConf.iconStackHeight,
@@ -187,13 +173,13 @@ const sizeImageStack = createStack({
 sizeImageStack.addSpacer()
 const sizeImage = createImage({
     parent: sizeImageStack,
-    width: widgetConf.iconDims,
-    height: widgetConf.iconDims,
+    size: widgetConf.iconSize,
     color: widgetConf.text.color,
     image: totalSizeSymbol.image,
     align: 'center',
 })
 sizeImageStack.addSpacer()
+
 const sizeTextStack = createStack({
     parent: leftStack,
     height: widgetConf.iconStackHeight,
@@ -208,6 +194,23 @@ createText({
 })
 sizeTextStack.addSpacer()
 
+// Mempool size in blocks
+const sizeBlocksTextStack = createStack({
+    parent: leftStack,
+    height: widgetConf.iconStackHeight,
+    align: 'center',
+})
+sizeBlocksTextStack.addSpacer()
+createText({
+    parent: sizeBlocksTextStack,
+    content: (mempoolData.bytes / 1e6).toPrecision(2),
+    minimumScaleFactor: MIN_TEXT_SCALE,
+    font: widgetConf.font.small,
+})
+sizeBlocksTextStack.addSpacer(widgetConf.spacing)
+createImage({ color: widgetConf.text.color, image: blockSymbol.image, parent: sizeBlocksTextStack })
+sizeBlocksTextStack.addSpacer()
+
 // Mempool fee
 const feeImageStack = createStack({
     parent: leftStack,
@@ -217,8 +220,7 @@ const feeImageStack = createStack({
 feeImageStack.addSpacer()
 const feeImage = createImage({
     parent: feeImageStack,
-    width: widgetConf.iconDims,
-    height: widgetConf.iconDims,
+    size: widgetConf.iconSize,
     color: widgetConf.text.color,
     image: totalFeeSymbol.image,
     align: 'center',
@@ -234,7 +236,7 @@ feeTextStack.addSpacer()
 const feeTextContent = formatNumber(mempoolData.total_fee)
 createText({
     parent: feeTextStack,
-    content: `₿ ${feeTextContent}`,
+    content: feeTextContent,
     minimumScaleFactor: MIN_TEXT_SCALE,
     font: widgetConf.font.small,
 })
@@ -253,8 +255,7 @@ const heightImageStack = createStack({
 heightImageStack.addSpacer()
 const heightImage = createImage({
     parent: heightImageStack,
-    width: widgetConf.iconDims,
-    height: widgetConf.iconDims,
+    size: widgetConf.iconSize,
     color: widgetConf.text.color,
     image: heightSymbol.image,
     align: 'center',
@@ -283,8 +284,7 @@ const hashrateImageStack = createStack({
 hashrateImageStack.addSpacer()
 const hashrateImage = createImage({
     parent: hashrateImageStack,
-    width: widgetConf.iconDims,
-    height: widgetConf.iconDims,
+    size: widgetConf.iconSize,
     color: widgetConf.text.color,
     image: hashrateSymbol.image,
     align: 'center',
