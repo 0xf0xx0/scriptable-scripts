@@ -10,11 +10,9 @@ buncha wrapper methods around common Scriptable tasks, such as creating a center
 # Foxpool
 
 Bitcoin mempool viewer, using bitcoinexplorer.org or your own instance.
-
-# Foxprice
-
-Coin/token price widget, using CoinGecko.
+![screenshot](imgs/foxpool.png)
 
 # BTCHalving
 
 Bitcoin halving progress widget, using bitcoinexplorer.org or your own instance.
+![screenshot](imgs/btchalving.png)
